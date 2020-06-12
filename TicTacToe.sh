@@ -14,3 +14,16 @@ function assignSymbol(){
 }
 assignSymbol
 
+function toss()
+{
+	read -p "Press 1 for HEADS or Press 2 for TAILS" playerSelection
+	tossValue=$(( (( $RANDOM%2 ))+1 ))
+
+	if [ $tossValue -eq $playerSelection ]
+	then
+		echo "player won the toss"
+	else
+		echo "player lost the toss"
+	fi
+}
+toss
