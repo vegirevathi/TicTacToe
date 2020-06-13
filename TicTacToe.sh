@@ -1,5 +1,10 @@
 #!/bin/bash 
 echo "Welcome to Tic-Toe-Tac..Get Ready.."
+function reset()
+{
+	player=2
+	gameStatus=1
+}
 
 function assignSymbol(){
 	if [ $(( $RANDOM%2 )) -eq 1 ]
@@ -31,6 +36,8 @@ toss
 
 displayGameBoard()
 {
+	local row
+	local column
 	for (( row=1;row<=3;row++))
 	do
 		for (( column=1;column<=3;column++ ))
