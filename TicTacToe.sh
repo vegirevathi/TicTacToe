@@ -1,7 +1,12 @@
 #!/bin/bash 
 echo "Welcome to Tic-Toe-Tac..Get Ready.."
 
-Arr=(. . . . . . . . .)
+function reset()
+{
+	Arr=(. . . . . . . . .)
+	player=1
+	gameStatus=1
+}
 
 function assignSymbol(){
 	if [ $(( $RANDOM%2 )) -eq 1 ]
@@ -30,9 +35,25 @@ toss
 
 displayGameBoard()
 {
-  echo "r\c 1 2 3"
-  echo "1   ${Arr[0]} ${Arr[1]} ${Arr[2]}"
-  echo "2   ${Arr[3]} ${Arr[4]} ${Arr[5]}"
-  echo "3   ${Arr[6]} ${Arr[7]} ${Arr[8]}"
+	local row
+	local column
+	for (( row=1;row<=3;row++))
+	do
+		for (( column=1;column<=3;column++ ))
+		do
+			echo -n " ${board[$row,$column]}"
+			if [ $column -ne 3 ]
+			then
+				echo -n " |"
+			fi			
+		done
+		echo
+		if [ $row -ne 3 ]
+		then
+		echo -n "_________"
+		echo
+		fi
+	done
 }
 displayGameBoard
+
