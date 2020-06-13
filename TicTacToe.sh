@@ -1,10 +1,19 @@
 #!/bin/bash 
 echo "Welcome to Tic-Toe-Tac..Get Ready.."
+
+declare -A board
+
 function reset()
 {
-	player=2
-	gameStatus=1
+	for (( row=1;row<=3;row++))
+	do
+		for (( column=1;column<=3;column++ ))
+		do
+			board[$row,$column]='.'
+		done
+	done
 }
+reset
 
 function assignSymbol(){
 	if [ $(( $RANDOM%2 )) -eq 1 ]
@@ -51,7 +60,7 @@ displayGameBoard()
 		echo
 		if [ $row -ne 3 ]
 		then
-		echo -n "_________"
+		echo -n "_____________"
 		echo
 		fi
 	done
@@ -64,7 +73,7 @@ function checkRow()
 	rowFlag=1
 	for (( column=1;column<3;column++ ))
 	do
-		if [ ${board[$row,$column]} != ${board[$row,$(($column+1))]} ] || [[ ${board[$row,$column]} = $SPACE ]]
+		if [ ${board[$row,$column]} != ${board[$row,$(($column+1))]} ] || [[ ${board[$row,$column]} = '.' ]]
 		then
 			rowFlag=0
 			break
@@ -79,7 +88,7 @@ function checkColumn()
 	columnFlag=1
 	for (( row=1;row<3;row++ ))
 	do
-		if [ ${board[$row,$column]} != ${board[$(($row+1)),$column]} ] || [[ ${board[$row,$column]} = $SPACE ]]
+		if [ ${board[$row,$column]} != ${board[$(($row+1)),$column]} ] || [[ ${board[$row,$column]} = '.' ]]
 		then
 			columnFlag=0
 			break
@@ -97,7 +106,7 @@ function checkDiagonalOne()
 	then
 		for (( row=1;row<3;row++ ))
 		do
-			if [ ${board[$row,$row]} != ${board[$(($row+1)),$(($row+1))]} ] || [[ ${board[$row,$column]} = $SPACE ]]
+			if [ ${board[$row,$row]} != ${board[$(($row+1)),$(($row+1))]} ] || [[ ${board[$row,$column]} = '.' ]]
 			then
 				diagonalFlag=0
 				break
@@ -114,7 +123,7 @@ function checkDiagonalTwo()
 	diagonalFlag=1
 	for (( row=3,column=1;row>1;row--,column++ ))
 	do
-		if [ ${board[$row,$column]} != ${board[$(($row-1)),$(($column+1))]} ] || [[ ${board[$row,$column]} = $SPACE ]]
+		if [ ${board[$row,$column]} != ${board[$(($row-1)),$(($column+1))]} ] || [[ ${board[$row,$column]} = '.' ]]
 			then
 				diagonalFlag=0
 				break
@@ -150,7 +159,7 @@ function checkTie()
 	do
 		for (( column=1;column<=3;column++ ))
 		do
-			if [[ "${board[$row,$column]}" = $SPACE ]]
+			if [[ "${board[$row,$column]}" = '.' ]]
 			then
 				return 0
 			fi
@@ -177,6 +186,28 @@ function endResult()
 	fi
 	echo " next turn"
 }
+
+function computer()
+{
+	for (( row=1;row<=3;row++ ))
+	do
+		for (( column=1;column<=3;column++ ))
+		do
+			if [ ${board[$row,$column]} = '.' ]
+			then		
+				board[$row,$column]=$computerSymbol
+				checkWin $row $column
+				local win=$?
+				if [ $win -eq 1 ]
+				then
+					echo "Computer won the game"
+				fi
+			fi
+		done
+	done
+}
+computer
+win=$?
 result=$(endResult 1 3)
 echo $result
 
