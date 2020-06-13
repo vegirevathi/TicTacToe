@@ -207,6 +207,17 @@ function computer()
 	done
 }
 computer
+
+function computerWin()
+{
+	checkRow
+	checkColumn
+	checkDiagonalOne
+	checkDiagonalTwo
+	computer
+}
+computerWin
+
 win=$?
 result=$(endResult 1 3)
 echo $result
