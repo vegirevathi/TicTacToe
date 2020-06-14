@@ -195,30 +195,25 @@ function computer()
 		do
 			if [ ${board[$row,$column]} = '.' ]
 			then		
-				board[$row,$column]=$computerSymbol
+				board[$row,$column]=$playerSymbol
 				checkWin $row $column
 				local win=$?
 				if [ $win -eq 1 ]
 				then
-					echo "Computer won the game"
+					board[$row,$column]=$computerSymbol
+					return 1
+				else
+					board[$row,$column]='.'
 				fi
 			fi
 		done
 	done
+	return 0
 }
 computer
 
-function computerWin()
-{
-	checkRow
-	checkColumn
-	checkDiagonalOne
-	checkDiagonalTwo
-	computer
-}
-computerWin
-
+computer $computerSymbol $playerSymbol
 win=$?
 result=$(endResult 1 3)
 echo $result
-
+displayGameBoard
