@@ -13,7 +13,7 @@ function reset()
 		done
 	done
 }
-reset
+#reset
 
 function assignSymbol(){
 	if [ $(( $RANDOM%2 )) -eq 1 ]
@@ -27,7 +27,7 @@ function assignSymbol(){
 	echo "Player Symbol is : " $playerSymbol
 	echo "Computer Symbol is : " $computerSymbol
 }
-assignSymbol
+#assignSymbol
 
 function toss()
 {
@@ -41,7 +41,7 @@ function toss()
 		echo "Computer won the toss. Computer plays first"
 	fi
 }
-toss
+#toss
 
 displayGameBoard()
 {
@@ -65,7 +65,20 @@ displayGameBoard()
 		fi
 	done
 }
-displayGameBoard
+#displayGameBoard
+
+function fillCellsInBoard()
+{
+	row=$1
+	column=$2
+	symbol=$3
+	if [ ${board[$row,$column]} = '.' ]
+	then
+		board[$row,$column]=$symbol
+		return 1
+	fi
+	return 0
+}
 
 function checkRow()
 {
@@ -73,7 +86,7 @@ function checkRow()
 	rowFlag=1
 	for (( column=1;column<3;column++ ))
 	do
-		if [ ${board[$row,$column]} != ${board[$row,$(($column+1))]} ] || [[ ${board[$row,$column]} = '.' ]]
+		if [[ ${board[$row,$column]} != ${board[$row,$(($column+1))]} ]] || [[ ${board[$row,$column]} = '.' ]]
 		then
 			rowFlag=0
 			break
@@ -136,10 +149,10 @@ function checkWin()
 {
 	row=$1
 	checkRow $row
-	rowEqual=$?
+	rowEqual=$row
 	column=$2
 	checkColumn $column
-	columnEqual=$?
+	columnEqual=$column
 	checkDiagonalOne $row $column
 	diagonalOneEqual=$?
 	checkDiagonalTwo
@@ -176,31 +189,33 @@ function endResult()
 	win=$?
 	if [ $win -eq 1 ]
 	then
-		echo "won"
+		return $WON
 	fi
 	checkTie
 	tie=$?
 	if [ $tie -eq 1 ]
 	then
-		echo "tie"
+		return $TIE
 	fi
-	echo " next turn"
+	return $TURN
 }
 
 function computer()
 {
+	checkSymbol=$1
+	replaceSymbol=$2
 	for (( row=1;row<=3;row++ ))
 	do
 		for (( column=1;column<=3;column++ ))
 		do
 			if [ ${board[$row,$column]} = '.' ]
 			then		
-				board[$row,$column]=$playerSymbol
+				board[$row,$column]=$checkSymbol
 				checkWin $row $column
 				local win=$?
 				if [ $win -eq 1 ]
 				then
-					board[$row,$column]=$computerSymbol
+					board[$row,$column]=$replaceSymbol
 					return 1
 				else
 					board[$row,$column]='.'
@@ -216,14 +231,14 @@ function occupyCorners()
 	for (( row=1;row<=3;row+2 ))
 	do		for (( column=1;column<=3;column+2 ))
 		do
-			if [ ${board[$row,$column]} = '.' ]
+			fillCellsInBoard $row $column $computerSymbol
+			if [ $? -eq 1 ]
 			then
-				board[$row,$column]=$computerSymbol
 				return 1
 			fi
-			return 0
 		done
 	done
+	return 0
 }
 
 function occupyCenter()
@@ -251,17 +266,104 @@ function occupySide()
 					board[$row,$column]=$computerSymbol
 					return 1
 				fi
-				return 0
 			fi
 		done
 	done
+	return 0
 }
 
-occupySide
-occupyCenter 
-occupyCorners
-computer $computerSymbol $playerSymbol
-win=$?
-result=$(endResult 1 3)
-echo $result
-displayGameBoard
+function playerTurn()
+{
+	playerSymbol=$1
+	filled=0
+	while [ $filled -eq 0 ]
+	do
+		read -p "Enter Row" row
+		read -p "Enter Column" column
+		fillCellsInBoard $row $column $playerSymbol
+		filled=$?
+	done
+	endResult $row $column
+	result=$?
+	if [ $result = "WON" ]
+	then
+		echo "Player Won the Game"
+		return 1
+	elif [ $result = $TIE ]
+	then
+		echo "Game is draw"
+		return 1
+	else
+		return 0
+	fi
+}
+
+function computerTurn()
+{
+	local filled=0
+	computer $computerSymbol $computerSymbol
+	if [ $? -eq 1 ]
+	then
+		return 1
+	fi
+	computer $playerSymbol $computerSymbol
+	if [ $? -eq 1 ]
+	then
+		return 0
+	fi
+	occupyCorners
+	if [ $? -eq 1 ]
+	then
+		return 0
+	fi
+	occupyCenter
+   if [ $? -eq 1 ]
+   then
+      return 0
+   fi
+	occupySide
+   if [ $? -eq 1 ]
+   then
+      return 0
+   fi
+}
+
+
+function gamePlay()
+{
+	reset
+	assignSymbol
+	toss
+	displayGameBoard
+	local exit1
+	chance=$((RANDOM%2))
+	quit=0
+	while [ 0 -eq 0 ]
+	do
+		if [ $chance -eq 0 ]
+		then
+			chance=1
+			#echo "Player Won the Toss. Player plays First."
+			playerTurn $playerSymbol
+			quit=$?
+		else
+			chance=0
+			computerTurn
+			if [ $? -eq 0 ]
+			then
+				checkTie
+				if [ $? -eq 1 ]
+				then
+					echo "tie"
+					quit=1
+				fi
+			else
+				quit=1
+			fi
+		fi
+		displayGameBoard
+		echo
+	done
+}
+
+gamePlay
