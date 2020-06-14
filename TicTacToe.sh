@@ -215,8 +215,7 @@ function computer()
 function occupyCorners()
 {
 	for (( row=1;row<=3;row+2 ))
-	do
-		for (( column=1;column<=3;column+2 ))
+	do		for (( column=1;column<=3;column+2 ))
 		do
 			if [ ${board[$row,$column]} = '.' ]
 			then
@@ -227,7 +226,20 @@ function occupyCorners()
 	done
 	return 0
 }
-occupyCorners $computerSymbol
+
+function occupyCenter()
+{
+	row=2
+	column=2
+	if [ ${board[$row,$column]} = '.' ]
+	then
+		board[$row,$column]=$computerSymbol
+		return 1
+	fi
+	return 0
+}
+
+occupyCenter $computerSymbol
 computer $computerSymbol $playerSymbol
 win=$?
 result=$(endResult 1 3)
