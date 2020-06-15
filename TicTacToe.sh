@@ -40,9 +40,12 @@ function toss()
 	if [ $tossValue -eq $playerSelection ]
 	then
 		echo "player won the toss. Player plays first"
+		toss=1
 	else
 		echo "Computer won the toss. Computer plays first"
+		toss=0
 	fi
+	return $toss
 }
 
 displayGameBoard()
@@ -189,20 +192,18 @@ function endResult()
 
 function computer()
 {
-	checkSymbol=$1
-	replaceSymbol=$2
 	for (( row=1;row<=3;row++ ))
 	do
 		for (( column=1;column<=3;column++ ))
 		do
 			if [ ${board[$row,$column]} = '.' ]
 			then		
-				board[$row,$column]=$checkSymbol
+				board[$row,$column]=$playerSymbol
 				checkWin $row $column
 				local win=$?
 				if [ $? -eq $TRUE ]
 				then
-					board[$row,$column]=$replaceSymbol
+					board[$row,$column]=$computerSymbol
 					return $TRUE
 				else
 					board[$row,$column]='.'
@@ -297,10 +298,11 @@ function playerTurn()
 function computerTurn()
 {
 	local filled=0
-	computer $computerSymbol $computerSymbol
+	#computer $computerSymbol $computerSymbol
+	checkWin
 	if [ $? -eq $TRUE ]
 	then
-		#echo "Computer Won the Game"
+		echo "Computer Won the Game"
 		return $TRUE
 	fi
 	computer $playerSymbol $computerSymbol
@@ -325,29 +327,6 @@ function computerTurn()
    fi
 }
 
-switchPlayer(){
-	local computer=$1
-	local player=$((1-$computer))
-	if [ $player -eq 1 ]
-	then
-		playerTurn
-		displayGameBoard
-	else
-		computerTurn
-		displayGameBoard
-	fi
-}
-
-function getSymbolForPlayer {
-
-	if [ $((RANDOM%2)) -eq 1 ]
-	then
-		echo "X O"
-	else
-		echo "O X"
-	fi
-}
-
 function gamePlay()
 {
 	reset
@@ -355,33 +334,31 @@ function gamePlay()
 	toss
 	displayGameBoard
 	local exit1
-	chance=$((RANDOM%2))
 	quit=$FALSE
+	toss=$FALSE
 	while [ $FALSE -eq $quit ]
 	do	
-		if [[ $chance -eq $FALSE ]]
+		if [[ $toss -eq $FALSE ]]
 		then
-			chance=$TRUE
-			playerTurn $playerSymbol
-			quit=$?
-		else
-			chance=$FALSE
-			computerTurn	
-			if [ $? -eq $FALSE ]
+			playerTurn
+			if [ $endResult=$WON || $endResult=$TIE ]
 			then
-				checkTie
-				if [ $? -eq $TRUE ]
-				then
-			     		echo "tie"
-					quit=$TRUE		
-				fi
-			else
 				quit=$TRUE
+			else
+				toss=$TRUE
 			fi
+		else
+			computerTurn
+			if [ $endResult=$WON || $endResult=$TIE ]
+         then
+            quit=$TRUE
+         else
+            toss=$FALSE
+         fi
 		fi
 		displayGameBoard
-		echo
 	done
 }
 
 gamePlay
+displayGameBoard
